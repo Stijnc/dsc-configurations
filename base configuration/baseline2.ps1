@@ -53,13 +53,13 @@
         DependsOn = '[User]InovativLocalAdmin'
     }
    
-   #bad practice
+   #bad
     xIEEsC ESCAdmin {
        UserRole = 'Administrators'
        IsEnabled = $false
     }
 
-    #bad practice
+    #bad
     xIEEsC ESCUser {
         UserRole = 'Users'
         ISEnabled = $false
@@ -80,7 +80,6 @@
         Ensure = 'Present'
     }
 
-    #This is a good setting, if needed, can be changed but after interval it gets put back to RemoteSigned
     xPowerShellExecutionPolicy RemoteSigned{
         ExecutionPolicy = 'RemoteSigned'
     }

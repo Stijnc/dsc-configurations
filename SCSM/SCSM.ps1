@@ -1,64 +1,94 @@
 ﻿Configuration SCSM {
-
-    Import-DscResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateCongfi
     
+    Import-DscResource -ModuleName  xPSDesiredStateConfiguration, 
+                                    PSDesiredStateConfiguration,
+                                    xWebadministration
+    
+    $uriLogo = 'https://raw.githubusercontent.com/Stijnc/dsc-configurations/master/SCSM/LogoStar.gif'
+
+
     Node Portal {
         #install windows features
-        WindowsFeature webServerIIS
-        {
+        WindowsFeature webServerIIS {
             Ensure = 'Present'
-            Name = ''
+            Name = 'Web-Server'
         }
 
-        WindowsFeature aspNet45 {
+        WindowsFeature webAspNet45 {
             Ensure = 'Present'
-            Name = ''
+            Name = 'Web-Asp-Net45'
+            DependsOn = '[WindowsFeature]webServerIIS'
         }
 
         WindowsFeature httpActivation {
             Ensure = 'Present'
-            Name = ''
+            Name = 'NET-HTTP-Activation'
         }
 
         WindowsFeature dotNet35 {
             Ensure = 'Present'
-            Name = ''
+            Name = 'NET-Framework-Core'
         }
 
         WindowsFeature basicAuthentication {
             Ensure = 'Present'
-            Name = ''
+            Name = 'Web-Basic-Auth'
+            DependsOn = '[WindowsFeature]webServerIIS'
         }
 
         WindowsFeature windowsAuthentication {
             Ensure = 'Present'
-            Name = ''
+            Name = 'Web-Windows-Auth'
+            DependsOn = '[WindowsFeature]webServerIIS'
         }
 
         WindowsFeature netExtensibility45 {
             Ensure = 'Present'
-            Name = ''
+            Name = 'Web-Net-Ext45'
+            DependsOn = '[WindowsFeature]webServerIIS'
         }
 
         WindowsFeature asp {
             Ensure = 'Present'
-            Name = ''
+            Name = 'Web-ASP'
+            DependsOn = '[WindowsFeature]webServerIIS'
         }
-        WindowsFeature aspNet452 {
+
+        WindowsFeature aspNet45 {
             Ensure = 'Present'
-            Name = ''
+            Name = 'NET-Framework-45-ASPNET'
+            DependsOn = '[WindowsFeature]webServerIIS'
         }
+
+        xWebsite DefaultSite {
+            Ensure = 'Present'
+            Name = 'Default Web Site'
+            State = 'Stopped'
+            PhysicalPath = "$env:Systemdrive\intepub\wwwroot"
+            DependsOn = '[WindowsFeature]webServerIIS'
+        }
+
+
+        #SCSM portal --> TODO custom resource needed
+        #AppSettings --> TODO
 
         File tmpFolder {
             Ensure = 'Present'
             Type = 'Directory'
             DestinationPath = "$env:Systemdrive\tmp"
         }
-        #install package
 
-        #copy logo
-        xRemoteFile 
-        #AppSettings
+        #copy logo --> Change after package deployment
+        xRemoteFile logo {
+            DestinationPath = "$env:Systemdrive\tmp"
+            Uri = $uriLogo
+            UserAgent = [Microsoft.PowerShell.Commands.PSUserAgent]::InternetExplorer
+            Headers = @{"Accept-Language" = "en-US"}
+            DependsOn = '[File]tmpFolder'
+        }
+        
+
+        
 
 
     }
