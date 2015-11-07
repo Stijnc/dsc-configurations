@@ -1,23 +1,14 @@
 ﻿configuration baseline {
 
-    import-module xNetworking, 
-                  PsDesiredStateConfiguration, 
-                  xPSDesiredStateConfiguration, 
-                  xSystemSecurity, 
-                  xTimeZone, 
-                  xInternetExplorerHomePage,
-                  xPowerShellExecutionPolicy
-
-     $admin = get-credential
-     $adminMembers = @($admin.UserName)
-     if((Get-ciminstance Win32_ComputerSystem).PartOfDomain){
-        
-          switch ((Get-ciminstance Win32_ComputerSystem).Domain){
-              'vnextdemo1' {
-                $adminmembers += 'vnextdemo\serveradmins'
-              }
-          }
-      }
+param(
+    [PSCredential]$credential
+)
+    import-dscresource -ModuleName xNetworking
+    import-dscresource -ModuleName PsDesiredStateConfiguration
+    import-dscresource -ModuleName xSystemSecurity
+    import-dscresource -ModuleName xTimeZone
+    import-dscresource -ModuleName xInternetExplorerHomePage
+    import-dscresource -ModuleName xPowerShellExecutionPolicy
 
      Registry ServerManagerOobe {
         Ensure = 'Present'
@@ -27,61 +18,57 @@
         ValueType = 'DWORD'
     }
 
-    Registry ServerManager {
+     Registry ServerManager {
         Ensure = 'Present'
         Key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager'
         ValueName = 'DoNotOpenServerManagerAtLogon'
         ValueData = '1'
         ValueType = 'DWORD'
     }
-
-    User InovativLocalAdmin {
-        Ensure = 'Present'
-        UserName = $admin.UserName
-        Description = 'Inovativ local admin'
-        FullName = 'Inovativ Local Admin'
-        Password = $admin
-        PasswordChangeNotAllowed = $true
-        PasswordChangeRequired = $false
-        PasswordNeverExpires = $true
-    }
-
-    xGroup AdministratorsIncludeLocalAdmin {
-        Ensure = 'Present'
-        GroupName = 'Administrators'
-        MembersToInclude = $adminMembers
-        DependsOn = '[User]InovativLocalAdmin'
-    }
    
-   #bad practice
-    xIEEsC ESCAdmin {
+     #bad practice
+     xIEEsC ESCAdmin {
        UserRole = 'Administrators'
        IsEnabled = $false
     }
 
-    #bad practice
-    xIEEsC ESCUser {
+     #bad practice
+     xIEEsC ESCUser {
         UserRole = 'Users'
         ISEnabled = $false
     }
 
-    xUAC NotifyChanges {
+     xUAC NotifyChanges {
         Setting = 'NotifyChanges'
     }
 
-    #(UTC+01:00) Brussels, Copenhagen, Madrid, Paris
-    xTimeZone UTC1 {
+     #(UTC+01:00) Brussels, Copenhagen, Madrid, Paris
+     xTimeZone UTC1 {
         TimeZone = 'Romance Standard Time'
         IsSingleInstance = 'Yes'
     }
 
-    xInternetExplorerHomePage Google {
+     xInternetExplorerHomePage Google {
         StartPage = 'http://www.google.be'
         Ensure = 'Present'
     }
 
-    #This is a good setting, if needed, can be changed but after interval it gets put back to RemoteSigned
-    xPowerShellExecutionPolicy RemoteSigned{
+     #This is a good setting, if needed, can be changed but after interval it gets put back to RemoteSigned
+     xPowerShellExecutionPolicy RemoteSigned{
         ExecutionPolicy = 'RemoteSigned'
     }
+
+    #http://blog.powershell.no/2013/03/09/automatically-update-help-files-for-windows-powershell/
+
+    <#services
+        task scheduler
+        windows firewall
+        windows time
+        winrm
+        WinMgmt
+        TrustedInstaller
+        WindowsUpdate
+
+    #>
+
 }
