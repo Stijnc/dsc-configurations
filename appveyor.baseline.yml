@@ -2,7 +2,7 @@ os: Unstable
 install:
   - cinst -y  pester
 
-build: false
+build: off
 
 test_script:
   - ps:  |
