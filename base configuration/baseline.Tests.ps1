@@ -24,6 +24,28 @@ Describe 'baseline configuration' {
         It 'Should use the xNetworking DSC resource module' {
             (Get-command baseline).Definition | Should Match 'xNetworking'
         }
+        It "Is valid Powershell (Has no script errors)" {
+
+                $contents = Get-Content -Path $sut -ErrorAction Stop
+                $errors = $null
+                $null = [System.Management.Automation.PSParser]::Tokenize($contents, [ref]$errors)
+                $errors.Count | Should Be 0
+            }
+        It 'Should only contain exactly one configuration' {
+            ((get-command baseline).CommandType).Count | Should BeExactly 1
+            
+        }
+        It 'Should have help' {
+            (get-command baseline).Definition | should Match '\.SYNOPSIS'
+            (get-command baseline).Definition | should Match '\.DESCRIPTION'
+            (get-command baseline).Definition | should Match '\.EXAMPLE'
+            
+        }
+        It 'Should fail if the xNetworking dsc module is not available' {
+            
+            
+        }
+        
     }
 
     Context 'Node Configuration' {
@@ -38,7 +60,12 @@ Describe 'baseline configuration' {
             baseline -OutputPath $OutputPath
             Join-Path -Path $OutputPath -ChildPath 'localhost.mof' | Should Exist
         }
-
+        
+        It 'Should generate a valid mof' {
+            baseline -OutputPath $OutputPath
+            mofcomp -check $OutputPath\localhost.mof | select-string 'Error*' | Should Not Exist
+            
+        }
         AfterEach{
             Remove-Item TestDrive:\* -Recurse
         }

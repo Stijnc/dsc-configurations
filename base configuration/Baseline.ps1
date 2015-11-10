@@ -1,5 +1,8 @@
 ﻿configuration baseline {
-
+<#
+.SYNOPSIS
+    this is some automatically-update-help-files-for-windows-powershell
+#>
 param(
     [PSCredential]$credential
 )
